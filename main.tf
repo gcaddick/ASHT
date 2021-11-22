@@ -61,6 +61,37 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
  }
 }
 
+
+resource "aws_s3_bucket_policy" "CloudTrailAccessToLogBucket" {
+    bucket = "${aws_s3_bucket.LogsFromCloudTrail.id}"
+    policy = jsonencode({
+        "Version": "2012-10-17"
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                },
+
+                "Action": [
+                    "s3:GetBucketAcl",
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:PutBucketAcl",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl"
+                ],
+                "Resource": [
+                "arn:aws:s3:::logs-from-cloudtrail-7834",
+                "arn:aws:s3:::logs-from-cloudtrail-7834/*"
+                ]
+            }
+        ]
+    })
+}
+
+
+
 // Defining S3 bucket for CloudTrail logs
 resource "aws_s3_bucket" "LogsFromCloudTrail" {
     bucket = "logs-from-cloudtrail-7834"
@@ -99,7 +130,7 @@ resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   bucket = aws_s3_bucket.LogsFromCloudTrail.id
 
   block_public_acls = true
-  block_public_policy = true
+  block_public_policy = false
   ignore_public_acls = true
   restrict_public_buckets = true
 }
@@ -108,17 +139,20 @@ resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   bucket = aws_s3_bucket.LogAccessFromLogBucket.id
 
   block_public_acls = true
-  block_public_policy = true
+  block_public_policy = false
   ignore_public_acls = true
   restrict_public_buckets = true
 }
+
+
+
 
 // Creating Customer Managed CMKs
 
 
 resource "aws_cloudtrail" "EnableAllRegionCT" {
     name = "Account-CloudTrail"
-    s3_bucket_name = aws_s3_bucket.LogsFromCloudTrail.id
+    s3_bucket_name = "${aws_s3_bucket.LogsFromCloudTrail.id}"
 
     // Enables log file validation
     // Found in terraform docs
