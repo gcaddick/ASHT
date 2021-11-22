@@ -31,7 +31,8 @@ Default VPCs Requirements:
 
 // Provider is AWS
 provider "aws" {
-     region = "eu-west-2"
+     region = "eu-west-2" 
+     // Region set to UK, could be elsewhere
 }
 
 
@@ -70,7 +71,10 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
  versioning {
     enabled = true
  }
- logging{
+
+ // Enabling bucket access logging 
+ // Bucket logging sent to different bucket
+ logging{ 
     target_bucket = aws_s3_bucket.LogAccessFromLogBucket.id
     target_prefix = "log/"
  }
@@ -107,4 +111,33 @@ resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   block_public_policy = true
   ignore_public_acls = true
   restrict_public_buckets = true
+}
+
+// Creating Customer Managed CMKs
+
+
+resource "aws_cloudtrail" "EnableAllRegionCT" {
+    name = "Account-CloudTrail"
+    s3_bucket_name = aws_s3_bucket.LogsFromCloudTrail.id
+
+    // Enables log file validation
+    // Found in terraform docs
+    enable_log_file_validation = true
+
+    
+    // Sets logging trail to all regions rather than region specific
+    is_multi_region_trail = true
+
+    // is_organization_trail
+    // command useful if organization trail is required.
+    // resource must be in master account of org
+
+    // Includes both management events and global events in CloudTrail
+    include_global_service_events = true
+    event_selector{
+        read_write_type = "All"
+        include_management_events = true
+    }
+    // Encrypting Logs at rest
+    //kms_key_id
 }
