@@ -45,6 +45,19 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
  versioning {
     enabled = true
  }
+    // Cost saving to move logs older than X days to cheaper storage
+ lifecycle_rule {
+    enabled = true
+
+    transition {
+        days = 30
+        storage_class = "STANDARD_IA"
+    }
+    transition {
+      days = 60
+      storage_class = "GLACIER"
+    }
+ }
 }
 
 // Defining S3 bucket for CloudTrail logs
@@ -60,5 +73,20 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
  logging{
     target_bucket = aws_s3_bucket.LogAccessFromLogBucket.id
     target_prefix = "log/"
+ }
+
+    // Cost saving to move logs older than X days to cheaper storage
+ lifecycle_rule {
+    prefix  = "log/"
+    enabled = true
+
+    transition {
+        days = 30
+        storage_class = "STANDARD_IA"
+    }
+    transition {
+      days = 60
+      storage_class = "GLACIER"
+    }
  }
 }
