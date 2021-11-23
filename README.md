@@ -35,7 +35,7 @@ Default VPCs Requirements:
     7. Remove the default VPC within every region of the account.
 
 
-Fully completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
+Completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
 and 6 was tested and works as seen below of alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
