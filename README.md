@@ -50,6 +50,7 @@ split into smaller sections for readability.
 
 Through the project I have used Trello to keep track of required tasks and made comments about
 my usage of resources found, and what resource satisfies the task. Below is the board from the get go:
+(Link to Trello board: https://trello.com/b/RWRYKgFF/account-security-hardening-test)
 
 ![Trellov2](Trellov2.PNG)
 
@@ -61,6 +62,10 @@ Labels are used to distinguish what type of task and also if they are in progres
 The most upto date version of the board is shown below:
 
 ![trellov3](trellov3.PNG)
+
+As shown, 7. is still orange, meaning it is still in progress. The issue here is that you cannot easily
+delete default VPC/ACLs and I am in the process of working out how to. My temporary fix is deny all inbound
+and outbound traffic as explained in the comments on that card.
 
 
 
