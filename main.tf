@@ -35,6 +35,14 @@ provider "aws" {
      // Region set to UK, could be elsewhere
 }
 
+data "aws_caller_identity" "current" {}
+
+// Creating Customer Managed CMKs
+resource "aws_kms_key" "EncryptingLogsAtRest" {
+    description = "Used for encrypting logs at rest in bucket"
+    key_usage = "ENCRYPT_DECRYPT"
+    customer_master_key_spec = "SYMMETRIC_DEFAULT"
+}
 
 // Defining S3 bucket for access logs of CloudTrail logs
 resource "aws_s3_bucket" "LogAccessFromLogBucket" {
@@ -62,35 +70,59 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
 }
 
 
-resource "aws_s3_bucket_policy" "CloudTrailAccessToLogBucket" {
-    bucket = "${aws_s3_bucket.LogsFromCloudTrail.id}"
-    policy = jsonencode({
-        "Version": "2012-10-17"
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": "cloudtrail.amazonaws.com"
-                },
 
-                "Action": [
-                    "s3:GetBucketAcl",
-                    "s3:GetObject",
-                    "s3:GetObjectAcl",
-                    "s3:PutBucketAcl",
-                    "s3:PutObject",
-                    "s3:PutObjectAcl"
-                ],
-                "Resource": [
-                "arn:aws:s3:::logs-from-cloudtrail-7834",
-                "arn:aws:s3:::logs-from-cloudtrail-7834/*"
-                ]
-            }
-        ]
-    })
+
+
+
+resource "aws_iam_role" "CloudTrailRoleForKey" {
+  name = "cloudtrail-role-for-key"
+
+  assume_role_policy = jsonencode({
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+          "Service": "cloudtrail.amazonaws.com"
+        },
+      "Effect": "Allow",
+    }
+  ]
+ })
 }
 
+resource "aws_kms_grant" "KeyGrantForCloudTrail" {
+    name = "key-grant-for-cloudtrail"
+    grantee_principal = "${aws_iam_role.CloudTrailRoleForKey.arn}"
+    key_id =  "${aws_kms_key.EncryptingLogsAtRest.id}"
+    operations = [
+        "Encrypt",
+        "Decrypt"
+    ]
+} 
 
+
+resource "aws_cloudtrail" "EnableAllRegionCT" {
+    name = "Account-CloudTrail"
+    s3_bucket_name = "${aws_s3_bucket.LogsFromCloudTrail.id}"
+
+    enable_log_file_validation = true  // Enables log file validation, Found in terraform docs
+
+    is_multi_region_trail = true     // Sets logging trail to all regions rather than region specific
+    s3_key_prefix = ""
+    // is_organization_trail
+    // command useful if organization trail is required.
+    // resource must be in master account of org
+
+    // Includes both management events and global events in CloudTrail
+    include_global_service_events = true
+    event_selector{
+        read_write_type = "All"
+        include_management_events = true
+    }
+    
+    //kms_key_id = aws_kms_key.EncryptingLogsAtRest.arn // Encrypting Logs at rest
+}
 
 // Defining S3 bucket for CloudTrail logs
 resource "aws_s3_bucket" "LogsFromCloudTrail" {
@@ -124,13 +156,43 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
       storage_class = "GLACIER"
     }
  }
+ policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AWSCloudTrailAclCheck",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "cloudtrail.amazonaws.com"
+            },
+            "Action": "s3:GetBucketAcl",
+            "Resource": "arn:aws:s3:::logs-from-cloudtrail-7834"
+        },
+        {
+            "Sid": "AWSCloudTrailWrite",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "cloudtrail.amazonaws.com"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::logs-from-cloudtrail-7834/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+            "Condition": {
+                "StringEquals": {
+                    "s3:x-amz-acl": "bucket-owner-full-control"
+                }
+            }
+        }
+    ]
+}
+POLICY
 }
 
 resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   bucket = aws_s3_bucket.LogsFromCloudTrail.id
 
   block_public_acls = true
-  block_public_policy = false
+  block_public_policy = true
   ignore_public_acls = true
   restrict_public_buckets = true
 }
@@ -139,39 +201,7 @@ resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   bucket = aws_s3_bucket.LogAccessFromLogBucket.id
 
   block_public_acls = true
-  block_public_policy = false
+  block_public_policy = true
   ignore_public_acls = true
   restrict_public_buckets = true
-}
-
-
-
-
-// Creating Customer Managed CMKs
-
-
-resource "aws_cloudtrail" "EnableAllRegionCT" {
-    name = "Account-CloudTrail"
-    s3_bucket_name = "${aws_s3_bucket.LogsFromCloudTrail.id}"
-
-    // Enables log file validation
-    // Found in terraform docs
-    enable_log_file_validation = true
-
-    
-    // Sets logging trail to all regions rather than region specific
-    is_multi_region_trail = true
-
-    // is_organization_trail
-    // command useful if organization trail is required.
-    // resource must be in master account of org
-
-    // Includes both management events and global events in CloudTrail
-    include_global_service_events = true
-    event_selector{
-        read_write_type = "All"
-        include_management_events = true
-    }
-    // Encrypting Logs at rest
-    //kms_key_id
 }
