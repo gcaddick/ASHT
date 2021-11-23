@@ -3,7 +3,9 @@ Repo for Account Security Hardening Test (ASHT) code
 
 
 Main terraform file for Account Security Hardening
+
 Objective:
+
 CloudTrail Requirements:
 
     1. Enable CloudTrail
@@ -35,3 +37,20 @@ Default VPCs Requirements:
 
 Fully completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
 and 6 was tested and works as seen below of alarm email. ![RootUsageWorks](RootUsageWorks.PNG)
+
+
+
+Files:
+
+- main.tf
+- SepFiles/
+
+main.tf contains one long file of code to do the above, whereas SepFiles/ contains the same code 
+split into smaller sections for readability.
+
+Through the project I have used Trello to keep track of required tasks and made comments about
+my usage of resources found, and what resource satisfies the task. Below is the board from the get go
+![FirstTrelloBoard](FirstTrelloBoard.PNG)
+
+As you can see, sections are split accoring to CloudTrail Tasks, Cloudwatch, Alarms and Misc (This changes
+later into CloudTrails Tasks, CloudWatch Filters and Alarms Requirements, and Default VPCs Requirements)
