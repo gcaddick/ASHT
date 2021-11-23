@@ -35,7 +35,7 @@ provider "aws" {
      // Region set to UK, could be elsewhere
 }
 
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "current" {} // Used for identifying the current user
 
 // Creating Customer Managed CMKs
 resource "aws_kms_key" "EncryptingLogsAtRest" {
@@ -43,6 +43,7 @@ resource "aws_kms_key" "EncryptingLogsAtRest" {
     key_usage = "ENCRYPT_DECRYPT"
     customer_master_key_spec = "SYMMETRIC_DEFAULT"
 
+    // Policy defines cloudtrail usage of key and user ability to edit key configs
     policy = <<POLICY
 {
     "Version": "2012-10-17",
@@ -98,61 +99,6 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
       storage_class = "GLACIER"
     }
  }
-}
-
-
-
-
-
-
-resource "aws_iam_role" "CloudTrailRoleForKey" {
-  name = "cloudtrail-role-for-key"
-
-  assume_role_policy = jsonencode({
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-          "Service": "cloudtrail.amazonaws.com"
-        },
-      "Effect": "Allow",
-    }
-  ]
- })
-}
-
-resource "aws_kms_grant" "KeyGrantForCloudTrail" {
-    name = "key-grant-for-cloudtrail"
-    grantee_principal = "${aws_iam_role.CloudTrailRoleForKey.arn}"
-    key_id =  "${aws_kms_key.EncryptingLogsAtRest.id}"
-    operations = [
-        "Encrypt",
-        "Decrypt"
-    ]
-} 
-
-
-resource "aws_cloudtrail" "EnableAllRegionCT" {
-    name = "Account-CloudTrail"
-    s3_bucket_name = "${aws_s3_bucket.LogsFromCloudTrail.id}"
-
-    enable_log_file_validation = true  // Enables log file validation, Found in terraform docs
-
-    is_multi_region_trail = true     // Sets logging trail to all regions rather than region specific
-    s3_key_prefix = ""
-    // is_organization_trail
-    // command useful if organization trail is required.
-    // resource must be in master account of org
-
-    // Includes both management events and global events in CloudTrail
-    include_global_service_events = true
-    event_selector{
-        read_write_type = "All"
-        include_management_events = true
-    }
-    
-    kms_key_id = aws_kms_key.EncryptingLogsAtRest.arn // Encrypting Logs at rest
 }
 
 // Defining S3 bucket for CloudTrail logs
@@ -234,3 +180,73 @@ resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   ignore_public_acls = true
   restrict_public_buckets = true
 }
+
+resource "aws_iam_role" "CloudWatchLogRole" {
+    name = "cloudwatch-log-role"
+    assume_role_policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "cloudtrail.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+POLICY
+}
+
+resource "aws_iam_role_policy" "CloudWatchLogRolePolicy" {
+    name = "cloudwatch-log-role-policy"
+    role = "${aws_iam_role.CloudWatchLogRole.id}"
+    policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "${aws_cloudwatch_log_group.CloudTrailLogGroup.arn}*"
+        }
+    ]
+}
+POLICY
+}
+
+
+
+
+
+
+resource "aws_cloudtrail" "EnableAllRegionCT" {
+    name = "Account-CloudTrail"
+    s3_bucket_name = "${aws_s3_bucket.LogsFromCloudTrail.id}"
+
+    enable_log_file_validation = true  // Enables log file validation, Found in terraform docs
+
+    is_multi_region_trail = true     // Sets logging trail to all regions rather than region specific
+    s3_key_prefix = ""
+    // is_organization_trail
+    // command useful if organization trail is required.
+    // resource must be in master account of org
+
+    // Includes both management events and global events in CloudTrail
+    include_global_service_events = true
+    event_selector{
+        read_write_type = "All"
+        include_management_events = true
+    }
+    
+    kms_key_id = aws_kms_key.EncryptingLogsAtRest.arn // Encrypting Logs at rest
+
+    cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.CloudTrailLogGroup.arn}:*"
+    cloud_watch_logs_role_arn = "${aws_iam_role.CloudWatchLogRole.arn}"
+}
+
+resource "aws_cloudwatch_log_group" "CloudTrailLogGroup" {
+    name = "cloudtrail-log-group"
+}
+
