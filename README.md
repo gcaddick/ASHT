@@ -49,8 +49,18 @@ main.tf contains one long file of code to do the above, whereas SepFiles/ contai
 split into smaller sections for readability.
 
 Through the project I have used Trello to keep track of required tasks and made comments about
-my usage of resources found, and what resource satisfies the task. Below is the board from the get go
-![FirstTrelloBoard](FirstTrelloBoard.PNG)
+my usage of resources found, and what resource satisfies the task. Below is the board from the get go:
+
+![Trellov2](Trellov2.PNG)
 
 As you can see, sections are split accoring to CloudTrail Tasks, Cloudwatch, Alarms and Misc (This changes
 later into CloudTrails Tasks, CloudWatch Filters and Alarms Requirements, and Default VPCs Requirements)
+
+Labels are used to distinguish what type of task and also if they are in progress or completed.
+
+The most upto date version of the board is shown below:
+
+![trellov3](trellov3.PNG)
+
+
+
