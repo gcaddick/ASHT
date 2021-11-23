@@ -36,7 +36,7 @@ Default VPCs Requirements:
 
 
 Fully completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
-and 6 was tested and works as seen below of alarm email. ![RootUsageWorks](RootUsageWorks.PNG)
+and 6 was tested and works as seen below of alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
 
@@ -52,16 +52,17 @@ Through the project I have used Trello to keep track of required tasks and made 
 my usage of resources found, and what resource satisfies the task. Below is the board from the get go:
 (Link to Trello board: https://trello.com/b/RWRYKgFF/account-security-hardening-test)
 
-![Trellov2](Trellov2.PNG)
+![ImageFolder/Trellov2](ImageFolder/Trellov2.PNG)
 
 As you can see, sections are split accoring to CloudTrail Tasks, Cloudwatch, Alarms and Misc (This changes
-later into CloudTrails Tasks, CloudWatch Filters and Alarms Requirements, and Default VPCs Requirements)
+later into CloudTrails Tasks, CloudWatch Filters and Alarms Requirements, and Default VPCs Requirements
+to match the headings from above)
 
 Labels are used to distinguish what type of task and also if they are in progress or completed.
 
 The most upto date version of the board is shown below:
 
-![trellov3](trellov3.PNG)
+![ImageFolder/trellov3](ImageFolder/trellov3.PNG)
 
 As shown, 7. is still orange, meaning it is still in progress. The issue here is that you cannot easily
 delete default VPC/ACLs and I am in the process of working out how to. My temporary fix is deny all inbound
