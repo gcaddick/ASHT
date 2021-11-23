@@ -245,9 +245,12 @@ resource "aws_cloudwatch_log_group" "CloudTrailLogGroup" {
     name = "cloudtrail-log-group"
 }
 
+
+// Define unathorized API call metric filter
 resource "aws_cloudwatch_log_metric_filter" "UnAuthAPI" {
     name = "unauth-api"
-    pattern = "\"$.errorCode = AccessDenied\""
+    //pattern = "\"$.errorCode = AccessDenied*\""
+    pattern = "{($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\")}" 
 
     log_group_name = "${aws_cloudwatch_log_group.CloudTrailLogGroup.id}"
     metric_transformation {
@@ -257,6 +260,7 @@ resource "aws_cloudwatch_log_metric_filter" "UnAuthAPI" {
     }
 }
 
+// Define the Alarm for the API call metric filter
 resource "aws_cloudwatch_metric_alarm" "AlarmForUnAthorizedAPIcall" {
     alarm_name = "alarm-for-unathorized-api-call"
     comparison_operator = "GreaterThanThreshold"
@@ -276,6 +280,77 @@ resource "aws_sns_topic" "UnauthorizedAPI" {
 
 resource "aws_sns_topic_subscription" "UnAuthAPIemail" {
     topic_arn = "${aws_sns_topic.UnauthorizedAPI.arn}"
+    protocol = "email"
+    endpoint = "ledore5458@kyrescu.com"
+}
+
+
+resource "aws_cloudwatch_log_metric_filter" "NoMFA" {
+    name = "no-mfa"
+    pattern = "{($.eventName = ConsoleLogin) && ($.additionalEventData.MFAUsed = \"No\")}"
+
+    log_group_name = "${aws_cloudwatch_log_group.CloudTrailLogGroup.id}"
+    metric_transformation {
+        name = "no-mfa"
+        namespace = "CloudTrailMetrics"
+        value = 1
+    }
+}
+
+resource "aws_cloudwatch_metric_alarm" "AlarmForNoMFA" {
+    alarm_name = "alarm-for-no-mfa"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods = "1"
+    metric_name = "no-mfa"
+    namespace = "CloudTrailMetrics"
+    period = "60"
+    threshold = "0"
+    statistic = "SampleCount"
+    alarm_actions = [aws_sns_topic.NoMFAtopic.arn]
+}
+
+
+resource "aws_sns_topic" "NoMFAtopic" {
+    name = "NoMFA-topic"
+}
+
+resource "aws_sns_topic_subscription" "NoMFAemail" {
+    topic_arn = "${aws_sns_topic.NoMFAtopic.arn}"
+    protocol = "email"
+    endpoint = "ledore5458@kyrescu.com"
+}
+
+resource "aws_cloudwatch_log_metric_filter" "RootUsage" {
+    name = "root-usage"
+    pattern = "{($.eventName = ConsoleLogin) && ($.userIdentity.type = \"Root\")}"
+
+    log_group_name = "${aws_cloudwatch_log_group.CloudTrailLogGroup.id}"
+    metric_transformation {
+        name = "root-usage"
+        namespace = "CloudTrailMetrics"
+        value = 1
+    }
+}
+
+resource "aws_cloudwatch_metric_alarm" "AlarmForRootUsage" {
+    alarm_name = "alarm-for-root-usage"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods = "1"
+    metric_name = "root-usage"
+    namespace = "CloudTrailMetrics"
+    period = "60"
+    threshold = "0"
+    statistic = "SampleCount"
+    alarm_actions = [aws_sns_topic.RootUsagetopic.arn]
+}
+
+
+resource "aws_sns_topic" "RootUsagetopic" {
+    name = "RootUsage-topic"
+}
+
+resource "aws_sns_topic_subscription" "RootUsageEmail" {
+    topic_arn = "${aws_sns_topic.RootUsagetopic.arn}"
     protocol = "email"
     endpoint = "ledore5458@kyrescu.com"
 }
