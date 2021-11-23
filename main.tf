@@ -42,6 +42,37 @@ resource "aws_kms_key" "EncryptingLogsAtRest" {
     description = "Used for encrypting logs at rest in bucket"
     key_usage = "ENCRYPT_DECRYPT"
     customer_master_key_spec = "SYMMETRIC_DEFAULT"
+
+    policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "cloudtrail.amazonaws.com"
+            },
+            "Action": [                  
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt",
+                "kms:GenerateDataKey*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": { 
+                "AWS": "${data.aws_caller_identity.current.arn}"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+POLICY
 }
 
 // Defining S3 bucket for access logs of CloudTrail logs
@@ -121,7 +152,7 @@ resource "aws_cloudtrail" "EnableAllRegionCT" {
         include_management_events = true
     }
     
-    //kms_key_id = aws_kms_key.EncryptingLogsAtRest.arn // Encrypting Logs at rest
+    kms_key_id = aws_kms_key.EncryptingLogsAtRest.arn // Encrypting Logs at rest
 }
 
 // Defining S3 bucket for CloudTrail logs
@@ -161,7 +192,6 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "AWSCloudTrailAclCheck",
             "Effect": "Allow",
             "Principal": {
               "Service": "cloudtrail.amazonaws.com"
@@ -170,7 +200,6 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
             "Resource": "arn:aws:s3:::logs-from-cloudtrail-7834"
         },
         {
-            "Sid": "AWSCloudTrailWrite",
             "Effect": "Allow",
             "Principal": {
               "Service": "cloudtrail.amazonaws.com"
