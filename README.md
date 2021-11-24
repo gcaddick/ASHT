@@ -107,3 +107,14 @@ syntax and thats where I found this [stackoverflow](https://stackoverflow.com/qu
 [this recource](https://docs.fugue.co/FG_R00062.html). At the moment, they are set up to a period of 60s and threshold set to 0.
 When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to and therefore gets an 
 email notification.
+
+Finally deleting the default VPCs seems like a step too far for me. From my research of how to delete these, its done manually via the
+management console or via creating a script like this [delete-vpc.sh script](https://gist.github.com/jokeru/e4a25bbd95080cfd00edf1fa67b06996).
+
+To implement this script (delete_vpc.sh), I would do it one of two ways, very similar but sligtly different.
+1. Spin up an EC2 instance and make delete_vpc.sh the user data (with a couple of modifcations), therefore deleting the default IGWs,
+subnets, and VPCs when the EC2 instance spins up for the first time. 
+2. Spin up an EC2 instance where in the user data, the instance grabs the delete_vpc.sh file from a S3 bucket (for example) and runs it
+
+I think both options would work, I think I may need to include more in the terrafomr file, such as a temporary vpc to run the instance in,
+but would not know unless I tried.
