@@ -109,7 +109,7 @@ The next challenge was using the metric filters, especially the pattern for each
 calls and usage of the root account. For finding the correct pattern for each metric filter, I used [Fugue](https://docs.fugue.co/FG_R00055.html),
 which gave a step by step for setting the filter and alarm but I used it for the pattern. However the pattern was not the right
 syntax and that's where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work. I am not 
-100% sure I have set up the filter and alarm correctly, but the root usage works as mentioned earlier, this was done by using 
+100% sure I have set up the filter and alarm correctly, but the root usage works as mentioned earlier *(and now no mfa has been tested and works)* , this was done by using 
 [this recource](https://docs.fugue.co/FG_R00062.html). At the moment, they are set up to a period of 60s and threshold set to 0.
 When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to and therefore gets an 
 email notification.
