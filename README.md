@@ -4,48 +4,50 @@ Repo for Account Security Hardening Test (ASHT) code
 
 Main terraform file for Account Security Hardening
 
-Objective:
+**Objective:**
 
 CloudTrail Requirements:
 
-    1. Enable CloudTrail
-        a. Ensure CloudTrail is enabled in all regions
-        b. Ensure CloudTrail log file validation is enabled.
-        c. Ensure that both management and global events are captured within
+    [x]1. Enable CloudTrail
+        [x]a. Ensure CloudTrail is enabled in all regions
+        [x]b. Ensure CloudTrail log file validation is enabled.
+        [x]c. Ensure that both management and global events are captured within
         CloudTrail.
-        d. Ensure CloudTrail logs are encrypted at rest using KMS customer
+        [x]d. Ensure CloudTrail logs are encrypted at rest using KMS customer
         managed CMKs.
 
-    2. Ensure CloudTrail logs are stored within an S3 bucket.
-        a. Ensure controls are in place to block public access to the bucket.
-        b. Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket.
-    3. Ensure CloudTrail trails are integrated with CloudWatch Logs.
+    [x]2. Ensure CloudTrail logs are stored within an S3 bucket.
+        [x]a. Ensure controls are in place to block public access to the bucket.
+        [x]b. Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket.
+    [x]3. Ensure CloudTrail trails are integrated with CloudWatch Logs.
 
 CloudWatch Filters and Alarms Requirements:
 
     Send an email to a configured email address when any of the following events are
     logged within CloudTrail:
 
-        4. Unauthorized API calls
-        5. Management Console sign-in without MFA
-        6. Usage of the "root" account
+        [x]4. Unauthorized API calls
+        [x]5. Management Console sign-in without MFA
+        [x]6. Usage of the "root" account
 
 Default VPCs Requirements:
 
-    7. Remove the default VPC within every region of the account.
+    []7. Remove the default VPC within every region of the account.
 
 
 Completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
 and 6 was tested and works as seen below of alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
-Files:
+**Files:**
 
 - main.tf
 - SepFiles/
 
 main.tf contains one long file of code to do the above, whereas SepFiles/ contains the same code 
 split into smaller sections for readability.
+
+**Trello Usage**
 
 Through the project I have used Trello to keep track of required tasks and made comments about
 my usage of resources found, and what resource satisfies the task. Below is the board from the get go:
@@ -66,6 +68,18 @@ The most upto date version of the board is shown below:
 As shown, 7. is still orange, meaning it is still in progress. The issue here is that you cannot easily
 delete default VPC/ACLs and I am in the process of working out how to. My temporary fix is deny all inbound
 and outbound traffic as explained in the comments on that card.
+
+
+**Process**
+
+After setting up the trello board, I started with what I knew how to do. This was setting up the S3 buckets and then
+finding out how to deny all (using the pulic access block resource). I then went through the cards in number order, finding 
+the terraform registry website and read through the documentation on that specific module, saving any useful commands in the 
+comments of the trello card.
+
+
+
+**Issues Faced**
 
 The main issues I came across in this project was writing the bucket policies to give CloudTrail access to the 
 s3 bucket. As seen on the trello board in card (1.) I used a docs.aws resource to help with the content of the 
@@ -93,8 +107,8 @@ changing the actions to encrypt, decrypt, reencrypt and generateDataKey*.
 The next challenge was using the metric filters, especially the pattern for each of: logging in without MFA, unauthorized API
 calls and usage of the root account. For finding the correct pattern for each metric filter, I used [Fugue](https://docs.fugue.co/FG_R00055.html),
 which gave a step by step for setting the filter and alarm but I used it for the pattern. However the pattern was not the right
-syntax and thats where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work.I am not 
+syntax and thats where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work. I am not 
 100% sure I have set up the filter and alarm correctly, but the root usage works as mentioned earlier, this was done by using 
 [this recource](https://docs.fugue.co/FG_R00062.html). At the moment, they are set up to a period of 60s and threshold set to 0.
-When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to the topics and therefore 
-gets an email notification.
+When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to and therefore gets an 
+email notification.
