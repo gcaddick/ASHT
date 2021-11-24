@@ -39,7 +39,6 @@ Completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
 and 6 was tested and works as seen below of alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
-
 Files:
 
 - main.tf
@@ -50,7 +49,7 @@ split into smaller sections for readability.
 
 Through the project I have used Trello to keep track of required tasks and made comments about
 my usage of resources found, and what resource satisfies the task. Below is the board from the get go:
-(Link to Trello board: https://trello.com/b/RWRYKgFF/account-security-hardening-test)
+(Link to [Trello board](https://trello.com/b/RWRYKgFF/account-security-hardening-test))
 
 ![ImageFolder/Trellov2](ImageFolder/Trellov2.PNG)
 
@@ -87,5 +86,15 @@ within the aws_kms_key resource and tried two things before arriving at my curre
 
 I think these could have worked, but my issue was not giving a user the admin privileges for the key. At the moment the
 current user is the key admin, but I do not think this is best practice. I used this [aws resource](https://aws.amazon.com/premiumsupport/knowledge-center/update-key-policy-future/)
-to find a working policy, I then adapted the policy for my usage. Such as changing the principal to CLoudTrail and
-changing these actions to encrypt, decrypt, reencrypt and generateDataKey*. 
+to find a working policy, I then adapted the policy for my usage. Such as changing the principal to CloudTrail and
+changing the actions to encrypt, decrypt, reencrypt and generateDataKey*.
+
+
+The next challenge was using the metric filters, especially the pattern for each of: logging in without MFA, unauthorized API
+calls and usage of the root account. For finding the correct pattern for each metric filter, I used [Fugue](https://docs.fugue.co/FG_R00055.html),
+which gave a step by step for setting the filter and alarm but I used it for the pattern. However the pattern was not the right
+syntax and thats where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work.I am not 
+100% sure I have set up the filter and alarm correctly, but the root usage works as mentioned earlier, this was done by using 
+[this recource](https://docs.fugue.co/FG_R00062.html). At the moment, they are set up to a period of 60s and threshold set to 0.
+When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to the topics and therefore 
+gets an email notification.
