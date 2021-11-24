@@ -68,5 +68,24 @@ As shown, 7. is still orange, meaning it is still in progress. The issue here is
 delete default VPC/ACLs and I am in the process of working out how to. My temporary fix is deny all inbound
 and outbound traffic as explained in the comments on that card.
 
+The main issues I came across in this project was writing the bucket policies to give CloudTrail access to the 
+s3 bucket. As seen on the trello board in card (1.) I used a docs.aws resource to help with the content of the 
+policy. An example of my attempt before using this is below. 
 
+![ImageFolder/FirstBucketPolicy](ImageFolder/FirstBucketPolicy.PNG)
 
+Comming back to this policy, but embedding it in the S3 bucket, it applies successfully. However, The previous policy,
+as seen below, is a better policy as it grants less privileges and also makes sure that the bucket owner, has full control.
+
+![ImageFolder/BestPolicy](ImageFolder/BestPolicy.PNG)
+
+Following along with the policies, I have also never used kms modules/resources, and therefore did not know about policies
+within the aws_kms_key resource and tried two things before arriving at my current key policy:
+
+- First: Using the aws_kms_grant resource
+- Second: Using IAM roles and policies to allow CloudTrail ability to assume the role and use the key
+
+I think these could have worked, but my issue was not giving a user the admin privileges for the key. At the moment the
+current user is the key admin, but I do not think this is best practice. I used this [aws resource](https://aws.amazon.com/premiumsupport/knowledge-center/update-key-policy-future/)
+to find a working policy, I then adapted the policy for my usage. Such as changing the principal to CLoudTrail and
+changing these actions to encrypt, decrypt, reencrypt and generateDataKey*. 
