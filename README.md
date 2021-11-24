@@ -22,7 +22,6 @@ CloudTrail Requirements:
 CloudWatch Filters and Alarms Requirements:
 
     Send an email to a configured email address when any of the following events are logged within CloudTrail:
-
         4. Unauthorized API calls
         5. Management Console sign-in without MFA
         6. Usage of the "root" account
@@ -79,8 +78,7 @@ comments of the trello card.
 ## **Issues Faced**
 
 The main issues I came across in this project was writing the bucket policies to give CloudTrail access to the 
-s3 bucket. As seen on the trello board in card (1.) I used a docs.aws resource to help with the content of the 
-policy. An example of my attempt before using this is below. 
+s3 bucket. As seen on the trello board in card (1.) I used a [docs.aws](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/create-s3-bucket-policy-for-cloudtrail.html) resource to help with the content of the policy. An example of my attempt before using this is below. 
 
 ![ImageFolder/FirstBucketPolicy](ImageFolder/FirstBucketPolicy.PNG)
 
