@@ -124,3 +124,18 @@ subnets, and VPCs when the EC2 instance spins up for the first time.
 
 I think both options would work, I may need to include more in the terraform file, such as a temporary vpc to run the instance in,
 but I would not know unless I tried.
+
+
+
+## **Misc**
+
+How I found the test:
+I found this very interesting, I've not had to create a lot of the resources I made for this test, so I had to learn how to use them and what
+each depended on very quickly. I really enjoy the coding side of this and the problem solving can be very frustrating when I don't know what
+the issue is, but it is very rewarding when I solve it and see the "Apply Complete!"! This took me 2-2.5 days to complete.
+
+The Structure to my code:
+I have not been taught or seen a set structure to write terraform code in, so I try and group sections together. For example, in this, I grouped
+S3 buckets together, CloudTrail resources together and each email notification together. This was both to be able to understand what I was trying to 
+make and also for me to be able to go to similar resources quickly. I also added the same code but these sections were changed to different tf files
+if that is more desired.

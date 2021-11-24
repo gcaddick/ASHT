@@ -1,3 +1,4 @@
+
 // Creating Customer Managed CMKs
 resource "aws_kms_key" "EncryptingLogsAtRest" {
     description = "Used for encrypting logs at rest in bucket"

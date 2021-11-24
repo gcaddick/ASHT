@@ -26,11 +26,12 @@ resource "aws_cloudwatch_metric_alarm" "AlarmForUnAthorizedAPIcall" {
     alarm_actions = [aws_sns_topic.UnauthorizedAPI.arn]
 }
 
-
+// Create SNS topic for the unauthorised API call
 resource "aws_sns_topic" "UnauthorizedAPI" {
     name = "UnauthorizedAPICall"
 }
 
+// Subscribe a temporary email to the SNS topic
 resource "aws_sns_topic_subscription" "UnAuthAPIemail" {
     topic_arn = "${aws_sns_topic.UnauthorizedAPI.arn}"
     protocol = "email"

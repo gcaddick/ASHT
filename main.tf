@@ -120,6 +120,8 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
 }
 
 // Defining S3 bucket for CloudTrail logs
+// Policy allows cloudtrail access to the s3 bucket to get bucket ACL
+// Policy allows cloudtrail put objects in s3 bucket
 resource "aws_s3_bucket" "LogsFromCloudTrail" {
     bucket = "logs-from-cloudtrail-7834"
     acl    = "private" 
@@ -181,6 +183,7 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
 POLICY
 }
 
+// Block all public access to S3 buckets
 resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   bucket = aws_s3_bucket.LogsFromCloudTrail.id
 
@@ -190,6 +193,7 @@ resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   restrict_public_buckets = true
 }
 
+// Block all public access to S3 buckets
 resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   bucket = aws_s3_bucket.LogAccessFromLogBucket.id
 
@@ -199,6 +203,7 @@ resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   restrict_public_buckets = true
 }
 
+// IAM role for cloudtrail to assume
 resource "aws_iam_role" "CloudWatchLogRole" {
     name = "cloudwatch-log-role"
     assume_role_policy = <<POLICY
@@ -217,6 +222,7 @@ resource "aws_iam_role" "CloudWatchLogRole" {
 POLICY
 }
 
+// IAM policy that allows access to logs* in specific log group
 resource "aws_iam_role_policy" "CloudWatchLogRolePolicy" {
     name = "cloudwatch-log-role-policy"
     role = "${aws_iam_role.CloudWatchLogRole.id}"
@@ -259,6 +265,7 @@ resource "aws_cloudtrail" "EnableAllRegionCT" {
     cloud_watch_logs_role_arn = "${aws_iam_role.CloudWatchLogRole.arn}"
 }
 
+// Defines cloudwatch log group
 resource "aws_cloudwatch_log_group" "CloudTrailLogGroup" {
     name = "cloudtrail-log-group"
 }
@@ -291,18 +298,19 @@ resource "aws_cloudwatch_metric_alarm" "AlarmForUnAthorizedAPIcall" {
     alarm_actions = [aws_sns_topic.UnauthorizedAPI.arn]
 }
 
-
+// Create SNS topic for the unauthorised API call
 resource "aws_sns_topic" "UnauthorizedAPI" {
     name = "UnauthorizedAPICall"
 }
 
+// Subscribe a temporary email to the SNS topic
 resource "aws_sns_topic_subscription" "UnAuthAPIemail" {
     topic_arn = "${aws_sns_topic.UnauthorizedAPI.arn}"
     protocol = "email"
     endpoint = "ledore5458@kyrescu.com"
 }
 
-
+// Define metric filter for an account logging on with no MFA
 resource "aws_cloudwatch_log_metric_filter" "NoMFA" {
     name = "no-mfa"
     pattern = "{($.eventName = ConsoleLogin) && ($.additionalEventData.MFAUsed = \"No\")}"
@@ -315,6 +323,7 @@ resource "aws_cloudwatch_log_metric_filter" "NoMFA" {
     }
 }
 
+// Defining Alarm for the no MFA logon
 resource "aws_cloudwatch_metric_alarm" "AlarmForNoMFA" {
     alarm_name = "alarm-for-no-mfa"
     comparison_operator = "GreaterThanThreshold"
@@ -327,17 +336,19 @@ resource "aws_cloudwatch_metric_alarm" "AlarmForNoMFA" {
     alarm_actions = [aws_sns_topic.NoMFAtopic.arn]
 }
 
-
+// Creating SNS topic for no MFA
 resource "aws_sns_topic" "NoMFAtopic" {
     name = "NoMFA-topic"
 }
 
+// Subscribe a temporary email to the SNS topic
 resource "aws_sns_topic_subscription" "NoMFAemail" {
     topic_arn = "${aws_sns_topic.NoMFAtopic.arn}"
     protocol = "email"
     endpoint = "ledore5458@kyrescu.com"
 }
 
+// Define metric filter for usage of the root account
 resource "aws_cloudwatch_log_metric_filter" "RootUsage" {
     name = "root-usage"
     pattern = "{($.eventName = ConsoleLogin) && ($.userIdentity.type = \"Root\")}"
@@ -349,7 +360,7 @@ resource "aws_cloudwatch_log_metric_filter" "RootUsage" {
         value = 1
     }
 }
-
+// Defining Alarm for the root usage
 resource "aws_cloudwatch_metric_alarm" "AlarmForRootUsage" {
     alarm_name = "alarm-for-root-usage"
     comparison_operator = "GreaterThanThreshold"
@@ -362,11 +373,12 @@ resource "aws_cloudwatch_metric_alarm" "AlarmForRootUsage" {
     alarm_actions = [aws_sns_topic.RootUsagetopic.arn]
 }
 
-
+// Creating SNS topic for root usage
 resource "aws_sns_topic" "RootUsagetopic" {
     name = "RootUsage-topic"
 }
 
+// Subscribe a temporary email to the SNS topic
 resource "aws_sns_topic_subscription" "RootUsageEmail" {
     topic_arn = "${aws_sns_topic.RootUsagetopic.arn}"
     protocol = "email"

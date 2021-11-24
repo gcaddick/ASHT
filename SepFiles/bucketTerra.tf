@@ -1,4 +1,3 @@
-
 // Defining S3 bucket for access logs of CloudTrail logs
 resource "aws_s3_bucket" "LogAccessFromLogBucket" {
     bucket = "log-access-from-log-bucket-7834"
@@ -25,6 +24,8 @@ resource "aws_s3_bucket" "LogAccessFromLogBucket" {
 }
 
 // Defining S3 bucket for CloudTrail logs
+// Policy allows cloudtrail access to the s3 bucket to get bucket ACL
+// Policy allows cloudtrail put objects in s3 bucket
 resource "aws_s3_bucket" "LogsFromCloudTrail" {
     bucket = "logs-from-cloudtrail-7834"
     acl    = "private" 
@@ -86,6 +87,7 @@ resource "aws_s3_bucket" "LogsFromCloudTrail" {
 POLICY
 }
 
+// Block all public access to S3 buckets
 resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   bucket = aws_s3_bucket.LogsFromCloudTrail.id
 
@@ -95,6 +97,7 @@ resource "aws_s3_bucket_public_access_block" "LogsFromCloudTrail-ACCESS" {
   restrict_public_buckets = true
 }
 
+// Block all public access to S3 buckets
 resource "aws_s3_bucket_public_access_block" "LogAccessFromLogBucket-ACCESS" {
   bucket = aws_s3_bucket.LogAccessFromLogBucket.id
 

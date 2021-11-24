@@ -1,4 +1,5 @@
 
+// IAM role for cloudtrail to assume
 resource "aws_iam_role" "CloudWatchLogRole" {
     name = "cloudwatch-log-role"
     assume_role_policy = <<POLICY
@@ -17,6 +18,7 @@ resource "aws_iam_role" "CloudWatchLogRole" {
 POLICY
 }
 
+// IAM policy that allows access to logs* in specific log group
 resource "aws_iam_role_policy" "CloudWatchLogRolePolicy" {
     name = "cloudwatch-log-role-policy"
     role = "${aws_iam_role.CloudWatchLogRole.id}"
