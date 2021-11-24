@@ -35,7 +35,7 @@ Completed to 6. Point 4 ~~and 5~~ are untested, but coded in the same way as poi
 and 6 was tested and works as seen below in the alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
-Point 5 has not been tested and is successfull, email notification below.
+Point 5 has now been tested (alarm for account sign-in with no MFA) and is successfull, email notification below.
 
 ![ImageFolder/NoMFAworks](ImageFolder/NoMFAworks.PNG)
 
