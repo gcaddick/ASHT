@@ -32,7 +32,7 @@ Default VPCs Requirements:
 
 
 Completed to 6. Point 4 and 5 are untested, but coded in the same way as point 6
-and 6 was tested and works as seen below of alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
+and 6 was tested and works as seen below in the alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
 ## **Files:**
@@ -51,13 +51,13 @@ my usage of resources found, and what resource satisfies the task. Below is the 
 
 ![ImageFolder/Trellov2](ImageFolder/Trellov2.PNG)
 
-As you can see, sections are split accoring to CloudTrail Tasks, Cloudwatch, Alarms and Misc (This changes
+As you can see, sections are split according to CloudTrail Tasks, Cloudwatch, Alarms and Misc (This changes
 later into CloudTrails Tasks, CloudWatch Filters and Alarms Requirements, and Default VPCs Requirements
 to match the headings from above)
 
 Labels are used to distinguish what type of task and also if they are in progress or completed.
 
-The most upto date version of the board is shown below:
+The most up to date version of the board is shown below:
 
 ![ImageFolder/trellov3](ImageFolder/trellov3.PNG)
 
@@ -69,7 +69,7 @@ and outbound traffic as explained in the comments on that card.
 ## **Process**
 
 After setting up the trello board, I started with what I knew how to do. This was setting up the S3 buckets and then
-finding out how to deny all (using the pulic access block resource). I then went through the cards in number order, finding 
+finding out how to deny all (using the public access block resource). I then went through the cards in number order, finding 
 the terraform registry website and read through the documentation on that specific module, saving any useful commands in the 
 comments of the trello card.
 
@@ -82,8 +82,9 @@ s3 bucket. As seen on the trello board in card (1.) I used a [docs.aws](https://
 
 ![ImageFolder/FirstBucketPolicy](ImageFolder/FirstBucketPolicy.PNG)
 
-Comming back to this policy, but embedding it in the S3 bucket, it applies successfully. However, The previous policy,
-as seen below, is a better policy as it grants less privileges and also makes sure that the bucket owner, has full control.
+Coming back to this policy, but embedding it in the S3 bucket, it applies successfully. However, The previous policy,
+as seen below, is a better policy as it grants less privileges and also makes sure that the bucket owner has full control
+of the object.
 
 ![ImageFolder/BestPolicy](ImageFolder/BestPolicy.PNG)
 
@@ -102,19 +103,19 @@ changing the actions to encrypt, decrypt, reencrypt and generateDataKey*.
 The next challenge was using the metric filters, especially the pattern for each of: logging in without MFA, unauthorized API
 calls and usage of the root account. For finding the correct pattern for each metric filter, I used [Fugue](https://docs.fugue.co/FG_R00055.html),
 which gave a step by step for setting the filter and alarm but I used it for the pattern. However the pattern was not the right
-syntax and thats where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work. I am not 
+syntax and that's where I found this [stackoverflow](https://stackoverflow.com/questions/63668422/getting-invalidparameterexception-while-trying-to-setup-cloudwatch-log-filter-vi) resource to edit the patterns to work. I am not 
 100% sure I have set up the filter and alarm correctly, but the root usage works as mentioned earlier, this was done by using 
 [this recource](https://docs.fugue.co/FG_R00062.html). At the moment, they are set up to a period of 60s and threshold set to 0.
 When the alarm goes into alarm state, this is sent to a SNS topic which a temporary email is subscribed to and therefore gets an 
 email notification.
 
-Finally deleting the default VPCs seems like a step too far for me. From my research of how to delete these, its done manually via the
+Finally deleting the default VPCs seems like a step too far for me. From my research of how to delete these, it's done manually via the
 management console or via creating a script like this [delete-vpc.sh script](https://gist.github.com/jokeru/e4a25bbd95080cfd00edf1fa67b06996).
 
-To implement this script (delete_vpc.sh), I would do it one of two ways, very similar but sligtly different.
-1. Spin up an EC2 instance and make delete_vpc.sh the user data (with a couple of modifcations), therefore deleting the default IGWs,
+To implement this script (delete_vpc.sh), I would do it one of two ways, very similar but slightly different.
+1. Spin up an EC2 instance and make delete_vpc.sh the user data (with a couple of modifications), therefore deleting the default IGWs,
 subnets, and VPCs when the EC2 instance spins up for the first time. 
 2. Spin up an EC2 instance where in the user data, the instance grabs the delete_vpc.sh file from a S3 bucket (for example) and runs it
 
-I think both options would work, I think I may need to include more in the terrafomr file, such as a temporary vpc to run the instance in,
-but would not know unless I tried.
+I think both options would work, I think I may need to include more in the terraform file, such as a temporary vpc to run the instance in,
+but I would not know unless I tried.
