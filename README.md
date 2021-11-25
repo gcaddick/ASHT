@@ -31,14 +31,26 @@ Default VPCs Requirements:
     7. Remove the default VPC within every region of the account.
 
 
-Completed to 6. Point 4 ~~and 5~~ are untested, but coded in the same way as point 6
+## **Update 25/11/21**
+
+Added an email notification for changes to CloudTrail in the account. Also tested unauthorized API call email notification.
+See emails below.
+
+![ImageFolder/cloudtrail-email](ImageFolder/cloudtrail-email.PNG)
+
+![ImageFolder/UnauthEmail](ImageFolder/UnauthEmail.PNG)
+
+From basic test, the metric filter and alarms seem to be working fine.
+
+Email notification for changes to CloudTrail was added from the CIS whitepaper 3.5.
+
+Completed to 6. ~~Point 4 and 5 are untested~~, but coded in the same way as point 6
 and 6 was tested and works as seen below in the alarm email. ![ImageFolder/RootUsageWorks](ImageFolder/RootUsageWorks.PNG)
 
 
 Point 5 has now been tested (alarm for account sign-in with no MFA) and is successfull, email notification below.
 
 ![ImageFolder/NoMFAworks](ImageFolder/NoMFAworks.PNG)
-
 
 ## **Files:**
 
